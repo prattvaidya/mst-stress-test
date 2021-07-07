@@ -2,8 +2,10 @@ import React from "react"
 import { View, ViewStyle, TextStyle, ImageStyle, SafeAreaView } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { observer } from "mobx-react-lite"
+import {build,fake, sequence} from "@jackfranklin/test-data-bot"
 import { Button, Header, Screen, Text, Wallpaper, AutoImage as Image } from "../../components"
 import { color, spacing, typography } from "../../theme"
+import { useStores } from "../../models"
 const bowserLogo = require("./bowser.png")
 
 const FULL: ViewStyle = { flex: 1 }
@@ -62,6 +64,7 @@ const CONTENT: TextStyle = {
 }
 const CONTINUE: ViewStyle = {
   paddingVertical: spacing[4],
+  marginVertical: spacing[1],
   paddingHorizontal: spacing[4],
   backgroundColor: color.palette.deepPurple,
 }
@@ -79,7 +82,35 @@ const FOOTER_CONTENT: ViewStyle = {
 
 export const WelcomeScreen = observer(function WelcomeScreen() {
   const navigation = useNavigation()
+  const {productStore} = useStores()
+  productStore.setProducts([])
   const nextScreen = () => navigation.navigate("demo")
+
+  const addProducts = () => {
+    console.tron.log("Hello")
+    const productBuilder = build('Product', {
+      fields: {
+        barcode: sequence(),
+        location: fake(f => f.address.streetName()),
+        description: fake(f => f.commerce.product()),
+        count: 0,
+        price: fake(f => f.commerce.price()),
+      },
+    });
+
+    let products = []
+    for(let x = 0; x < 10000; x++) {
+      products[x] = productBuilder()
+    }
+
+    productStore.setProducts(products)
+    
+  }
+
+  const findProduct = () => {
+    console.tron.log(productStore.find(7844))
+  }
+  
 
   return (
     <View testID="WelcomeScreen" style={FULL}>
@@ -108,11 +139,19 @@ export const WelcomeScreen = observer(function WelcomeScreen() {
             testID="next-screen-button"
             style={CONTINUE}
             textStyle={CONTINUE_TEXT}
-            tx="welcomeScreen.continue"
-            onPress={nextScreen}
+            text="SET PRODUCTS"
+            onPress={addProducts}
+          />
+          <Button
+            testID="next-screen-button"
+            style={CONTINUE}
+            textStyle={CONTINUE_TEXT}
+            text="FIND PRODUCT"
+            onPress={findProduct}
           />
         </View>
       </SafeAreaView>
+
     </View>
   )
 })
